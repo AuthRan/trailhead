@@ -1,0 +1,71 @@
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-bar__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.filter-bar__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter-bar__summary {
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+}
+
+.search-field {
+  flex: 1 1 18rem;
+  min-width: 12rem;
+}
+
+.search-field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-field__control .input {
+  padding-right: 2.25rem;
+}
+
+.search-field__clear {
+  position: absolute;
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-subtle);
+  font-size: var(--text-lg);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.search-field__clear:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* The browser's own search clear affordance would sit on top of ours. */
+.search-field__control .input::-webkit-search-cancel-button {
+  display: none;
+}

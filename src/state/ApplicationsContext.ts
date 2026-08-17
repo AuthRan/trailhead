@@ -21,6 +21,10 @@ export interface ApplicationsSnapshot {
   tagFacets: TagCount[]
   /** Total applications before filtering, for "showing x of y" copy. */
   totalCount: number
+  /** Incremented whenever the filters are replaced wholesale. Inputs that keep
+   * a local draft of a filter watch this to know a reset happened even when
+   * their own slice of the filters looks unchanged. */
+  filtersToken: number
 }
 
 export interface ApplicationsActions {

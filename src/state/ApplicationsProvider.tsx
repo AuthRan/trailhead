@@ -41,6 +41,7 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(applicationsReducer, initialApplicationsState)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT)
+  const [filtersToken, setFiltersToken] = useState(0)
   const [reloadToken, setReloadToken] = useState(0)
   const [facets, setFacets] = useState<{ tags: TagCount[]; total: number }>({
     tags: [],
@@ -101,6 +102,7 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
 
   const resetFilters = useCallback(() => {
     setFilters(EMPTY_FILTERS)
+    setFiltersToken((token) => token + 1)
   }, [])
 
   const toggleStageFilter = useCallback((stage: Stage) => {
@@ -194,6 +196,7 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       sort,
       tagFacets: facets.tags,
       totalCount: facets.total,
+      filtersToken,
     }),
     [
       state.status,
@@ -203,6 +206,7 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       filters,
       sort,
       facets,
+      filtersToken,
     ],
   )
 
