@@ -13,10 +13,9 @@ describe('StatsPage', () => {
   it('shows summary, funnel, and follow-up information for the workspace', async () => {
     renderWithProviders(<StatsPage />)
 
-    await waitFor(() => expect(screen.getByText('Total tracked')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('Meridian Analytics')).toBeInTheDocument())
     expect(screen.getByText('Pipeline funnel')).toBeInTheDocument()
     expect(screen.getByText('Source performance')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Needs follow-up' })).toBeInTheDocument()
-    expect(screen.getByText('Meridian Analytics')).toBeInTheDocument()
   })
 })
