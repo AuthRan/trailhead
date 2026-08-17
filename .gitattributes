@@ -1,0 +1,6 @@
+# Keep the repository normalized to LF so diffs and patches apply cleanly
+# regardless of the machine that produced them.
+* text=auto eol=lf
+
+*.png binary
+*.svg text eol=lf

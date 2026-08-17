@@ -1,32 +1,48 @@
-# React + TypeScript + Vite
+# Trailhead
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A local-first job application tracker. Everything lives in the browser — no
+backend, no accounts, no network calls. Track roles you are chasing, move them
+through the pipeline, and see where applications stall.
 
-Currently, two official plugins are available:
+## Why
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Spreadsheets lose the interaction history and job boards lose the roles you
+found elsewhere. Trailhead keeps one record per application with its full
+activity trail, and answers the questions that actually matter mid-search:
+what is waiting on me, what has gone quiet, and where do I keep dropping out.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **List view** — search, filter by stage/tag/remote, sort, multi-select with
+  bulk stage changes.
+- **Board view** — the same applications as a pipeline board, movable by
+  keyboard.
+- **Detail drawer** — edit a record inline with an unsaved-changes guard.
+- **Stats** — funnel conversion, response rates, and stalled applications.
+- **Undo** — destructive actions land in a toast with an undo affordance.
 
-## Expanding the Oxlint configuration
+## Getting started
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Requires Node.js 20.19+ (or 22.12+).
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Scripts
+
+| Script              | Purpose                                  |
+| ------------------- | ---------------------------------------- |
+| `npm run dev`       | Start the Vite dev server                |
+| `npm run build`     | Typecheck and produce a production build |
+| `npm run preview`   | Serve the production build locally       |
+| `npm test`          | Run the Vitest suite once                |
+| `npm run test:watch`| Run Vitest in watch mode                 |
+| `npm run typecheck` | Typecheck without emitting               |
+| `npm run lint`      | Lint with oxlint                         |
+
+## Storage
+
+State is persisted to `localStorage` under a versioned key. Clearing site data
+resets the app to its seed applications.
