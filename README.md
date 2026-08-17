@@ -21,7 +21,9 @@ what is waiting on me, what has gone quiet, and where do I keep dropping out.
 - **Stats** — funnel conversion, response rates, and stalled applications.
 - **Undo** — destructive actions land in a toast with an undo affordance.
 - **CSV export** — download the applications currently on screen, filters and
-  all, for a spreadsheet or a backup.
+  all, for a spreadsheet.
+- **Backup and restore** — write the whole workspace to a versioned JSON file
+  and read it back, with every record validated on the way in.
 
 ## Getting started
 
@@ -60,4 +62,10 @@ npm run dev
 ## Storage
 
 State is persisted to `localStorage` under a versioned key. Clearing site data
-resets the app to its seed applications.
+resets the app to its seed applications. The sort column is remembered
+separately, so a reload keeps the view you left.
+
+**Back up** writes the whole workspace — not just the filtered rows — to
+`trailhead-backup-<date>.json`. The file carries a schema version, and reading
+one back validates every record, refusing the import rather than silently
+dropping anything it cannot read.
