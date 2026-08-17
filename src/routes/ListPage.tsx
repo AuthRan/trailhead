@@ -35,7 +35,7 @@ export function ListPage() {
         <div>
           <h1 className="page-header__title">Applications</h1>
           <p className="page-header__subtitle">
-            {totalCount} tracked in this workspace
+            {isFiltered ? `${items.length} of ${totalCount} shown` : `${totalCount} tracked in this workspace`}
           </p>
         </div>
         <div className="page-header__actions">
