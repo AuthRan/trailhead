@@ -4,12 +4,15 @@ import { formatRelative } from '../lib/date'
 import { breakdownBySource, buildFunnel, findStalled, summarize } from '../lib/stats'
 import { STAGE_SHORT_LABELS } from '../lib/types'
 import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 function percent(value: number): string {
   return new Intl.NumberFormat('en-GB', { style: 'percent', maximumFractionDigits: 0 }).format(value)
 }
 
 export function StatsPage() {
+  useDocumentTitle('Stats')
+
   const { items, status, error } = useApplications()
   const { refresh } = useApplicationsActions()
   const { summary, funnel, sources, stalled } = useMemo(

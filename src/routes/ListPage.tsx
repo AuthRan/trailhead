@@ -9,6 +9,7 @@ import { downloadCsv } from '../lib/csv'
 import { EMPTY_FILTERS } from '../lib/types'
 import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
 import { useToasts } from '../state/ToastContext'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 function LoadingRows() {
   return (
@@ -21,6 +22,8 @@ function LoadingRows() {
 }
 
 export function ListPage() {
+  useDocumentTitle('Applications')
+
   const { items, status, error, totalCount, filters, sort } = useApplications()
   const { refresh, resetFilters } = useApplicationsActions()
   const { showToast } = useToasts()

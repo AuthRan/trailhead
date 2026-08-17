@@ -5,6 +5,7 @@ import { formatRelative } from '../lib/date'
 import { STAGES, STAGE_SHORT_LABELS, type Application, type Stage } from '../lib/types'
 import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
 import { useToasts } from '../state/ToastContext'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 function BoardCard({
   application,
@@ -52,6 +53,8 @@ function BoardCard({
 }
 
 export function BoardPage() {
+  useDocumentTitle('Board')
+
   const { items, status, error } = useApplications()
   const { updateApplication, refresh } = useApplicationsActions()
   const { showToast } = useToasts()
