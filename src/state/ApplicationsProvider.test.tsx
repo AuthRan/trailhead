@@ -57,7 +57,9 @@ describe('ApplicationsProvider', () => {
       result.current.actions.toggleSort('company')
     })
     await waitFor(() => expect(result.current.store.sort.direction).toBe('desc'))
-    expect(result.current.store.items[0].company).toBe('Vellum Health')
+    await waitFor(() =>
+      expect(result.current.store.items[0].company).toBe('Vellum Health'),
+    )
   })
 
   it('drops a selection once the row leaves the filtered result', async () => {
