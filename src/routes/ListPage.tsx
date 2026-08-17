@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ApplicationTable } from '../components/ApplicationTable'
+import { BulkActionsBar } from '../components/BulkActionsBar'
 import { FilterBar } from '../components/FilterBar'
 import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
 
@@ -39,6 +40,7 @@ export function ListPage() {
       </div>
 
       <FilterBar />
+      <BulkActionsBar />
 
       {status === 'error' ? (
         <div className="error-banner" role="alert">

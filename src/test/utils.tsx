@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import type { ReactElement, ReactNode } from 'react'
 import { ApplicationsProvider } from '../state/ApplicationsProvider'
 import { ToastProvider } from '../state/ToastProvider'
+import { Toaster } from '../components/Toaster'
 
 interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
   route?: string
@@ -20,7 +21,11 @@ export function renderWithProviders(
     return (
       <MemoryRouter initialEntries={[route]}>
         <ToastProvider>
-          <ApplicationsProvider>{children}</ApplicationsProvider>
+          <ApplicationsProvider>
+            {children}
+            {/* The shell always mounts the toaster, so tests get it too. */}
+            <Toaster />
+          </ApplicationsProvider>
         </ToastProvider>
       </MemoryRouter>
     )
