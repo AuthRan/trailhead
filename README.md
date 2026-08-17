@@ -20,6 +20,8 @@ what is waiting on me, what has gone quiet, and where do I keep dropping out.
 - **Detail drawer** — edit a record inline with an unsaved-changes guard.
 - **Stats** — funnel conversion, response rates, and stalled applications.
 - **Undo** — destructive actions land in a toast with an undo affordance.
+- **CSV export** — download the applications currently on screen, filters and
+  all, for a spreadsheet or a backup.
 
 ## Getting started
 
@@ -33,10 +35,15 @@ npm run dev
 ## Using the workspace
 
 - Use **Add application** from the List view to start a new record.
+- Press <kbd>/</kbd> anywhere outside a text field to jump to the search box.
 - The Board provides Previous and Next controls for moving a card through the
   pipeline without opening its detail drawer.
 - Statistics reflect the current filtered result, making it easy to inspect a
   focused part of the job search.
+- **Export these as CSV** downloads exactly the rows a filter has left on
+  screen; with no filter active it exports the whole workspace. Fields are
+  quoted per RFC 4180, so commas, quotes, and multi-line notes survive the
+  round trip into a spreadsheet.
 
 ## Scripts
 
