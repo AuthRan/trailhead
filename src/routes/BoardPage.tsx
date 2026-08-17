@@ -10,10 +10,12 @@ function BoardCard({
   application,
   onOpen,
   onMove,
+  moving,
 }: {
   application: Application
   onOpen: (id: string) => void
   onMove: (application: Application, direction: -1 | 1) => void
+  moving: boolean
 }) {
   const stageIndex = STAGES.indexOf(application.stage)
 
@@ -31,7 +33,7 @@ function BoardCard({
         <button
           type="button"
           className="button button--small"
-          disabled={stageIndex === 0}
+          disabled={moving || stageIndex === 0}
           onClick={() => onMove(application, -1)}
         >
           Previous
@@ -39,7 +41,7 @@ function BoardCard({
         <button
           type="button"
           className="button button--small"
-          disabled={stageIndex === STAGES.length - 1}
+          disabled={moving || stageIndex === STAGES.length - 1}
           onClick={() => onMove(application, 1)}
         >
           Next
@@ -94,7 +96,7 @@ export function BoardPage() {
       ) : status === 'loading' && items.length === 0 ? (
         <p role="status" className="page-header__subtitle">Loading applications…</p>
       ) : (
-        <section className="board" aria-label="Application pipeline">
+        <section className="board" aria-label="Application pipeline" aria-busy={movingId !== null}>
           {STAGES.map((stage) => {
             const applications = items.filter((item) => item.stage === stage)
             return (
@@ -110,6 +112,7 @@ export function BoardPage() {
                       application={application}
                       onOpen={setOpenId}
                       onMove={moveApplication}
+                      moving={movingId !== null}
                     />
                   ))}
                   {applications.length === 0 ? <p className="board__empty">No applications</p> : null}
