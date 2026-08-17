@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { applicationsToCsv, csvFilename } from './csv'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { applicationsToCsv, csvFilename, downloadCsv } from './csv'
 import { createSeedApplications } from './seed'
 import type { Application } from './types'
 
@@ -129,5 +129,59 @@ describe('csvFilename', () => {
 
   it('pads single-digit months and days', () => {
     expect(csvFilename(new Date(2026, 0, 9))).toBe('trailhead-2026-01-09.csv')
+  })
+})
+
+describe('downloadCsv', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  /** jsdom implements neither object URLs nor real navigation, so the browser
+   * seam is stubbed and the anchor is captured as it is created. */
+  function stubDownload() {
+    const createObjectURL = vi.fn((_blob: Blob) => 'blob:trailhead')
+    const revokeObjectURL = vi.fn()
+    vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL })
+
+    const link = document.createElement('a')
+    const click = vi.spyOn(link, 'click').mockImplementation(() => {})
+    vi.spyOn(document, 'createElement').mockReturnValue(link)
+
+    return { createObjectURL, revokeObjectURL, link, click }
+  }
+
+  it('names the download after the export date', () => {
+    const { link } = stubDownload()
+
+    downloadCsv([makeApplication()], new Date(2026, 5, 1))
+
+    expect(link.download).toBe('trailhead-2026-06-01.csv')
+  })
+
+  it('points the link at the generated object URL and clicks it', () => {
+    const { link, click, createObjectURL } = stubDownload()
+
+    downloadCsv([makeApplication()])
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    expect(link.href).toBe('blob:trailhead')
+    expect(click).toHaveBeenCalledTimes(1)
+  })
+
+  it('serialises as text/csv', () => {
+    const { createObjectURL } = stubDownload()
+
+    downloadCsv([makeApplication()])
+
+    expect(createObjectURL.mock.calls[0]?.[0].type).toBe('text/csv;charset=utf-8')
+  })
+
+  it('releases the object URL so exports do not accumulate', () => {
+    const { revokeObjectURL } = stubDownload()
+
+    downloadCsv([makeApplication()])
+
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:trailhead')
   })
 })

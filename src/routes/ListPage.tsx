@@ -3,6 +3,7 @@ import { ApplicationTable } from '../components/ApplicationTable'
 import { BulkActionsBar } from '../components/BulkActionsBar'
 import { DetailDrawer } from '../components/DetailDrawer'
 import { FilterBar } from '../components/FilterBar'
+import { downloadCsv } from '../lib/csv'
 import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
 
 function LoadingRows() {
@@ -39,6 +40,14 @@ export function ListPage() {
           </p>
         </div>
         <div className="page-header__actions">
+          <button
+            type="button"
+            className="button"
+            onClick={() => downloadCsv(items)}
+            disabled={items.length === 0}
+          >
+            {isFiltered ? 'Export these as CSV' : 'Export CSV'}
+          </button>
           <button type="button" className="button button--primary" onClick={() => setOpenId('new')}>
             Add application
           </button>

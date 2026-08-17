@@ -64,3 +64,19 @@ export function csvFilename(now: Date = new Date()): string {
   const day = `${now.getDate()}`.padStart(2, '0')
   return `trailhead-${now.getFullYear()}-${month}-${day}.csv`
 }
+
+/** Hands the CSV to the browser as a download. The object URL is released
+ * straight after the click so a long session does not retain every export. */
+export function downloadCsv(applications: Application[], now: Date = new Date()): void {
+  const blob = new Blob([applicationsToCsv(applications)], {
+    type: 'text/csv;charset=utf-8',
+  })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = csvFilename(now)
+  link.click()
+
+  URL.revokeObjectURL(url)
+}
