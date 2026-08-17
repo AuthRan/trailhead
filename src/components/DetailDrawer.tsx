@@ -1,5 +1,6 @@
-import { useId, useMemo, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 import { ApplicationForm } from './ApplicationForm'
+import { ConfirmDialog } from './ConfirmDialog'
 import { Drawer } from './Drawer'
 import { StageBadge } from './StageBadge'
 import { applicationToFormValues, EMPTY_FORM_VALUES } from '../lib/applicationForm'
@@ -20,6 +21,23 @@ export function DetailDrawer({ openId, onClose }: DetailDrawerProps) {
   const { showToast } = useToasts()
   const formId = useId()
   const [saving, setSaving] = useState(false)
+  const [dirty, setDirty] = useState(false)
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false)
+
+  // Closing is only ever a request: unsaved edits get a chance to survive it.
+  const requestClose = useCallback(() => {
+    if (dirty) {
+      setConfirmingDiscard(true)
+      return
+    }
+    onClose()
+  }, [dirty, onClose])
+
+  const discardAndClose = useCallback(() => {
+    setConfirmingDiscard(false)
+    setDirty(false)
+    onClose()
+  }, [onClose])
 
   const application = useMemo(
     () => (openId && openId !== 'new' ? items.find((item) => item.id === openId) : null),
@@ -58,7 +76,7 @@ export function DetailDrawer({ openId, onClose }: DetailDrawerProps) {
     <Drawer
       open={open}
       title={creating ? 'New application' : (application?.company ?? '')}
-      onClose={onClose}
+      onClose={requestClose}
       footer={
         <>
           <button
@@ -69,10 +87,20 @@ export function DetailDrawer({ openId, onClose }: DetailDrawerProps) {
           >
             {creating ? 'Add application' : 'Save changes'}
           </button>
-          <button type="button" className="button" onClick={onClose} disabled={saving}>
+          <button
+            type="button"
+            className="button"
+            onClick={requestClose}
+            disabled={saving}
+          >
             Cancel
           </button>
           <span className="drawer__footer-spacer" />
+          {dirty ? (
+            <span className="unsaved-note">
+              <span aria-hidden="true">●</span> Unsaved changes
+            </span>
+          ) : null}
         </>
       }
     >
@@ -91,6 +119,18 @@ export function DetailDrawer({ openId, onClose }: DetailDrawerProps) {
         formId={formId}
         initialValues={initialValues}
         onSubmit={handleSubmit}
+        onDirtyChange={setDirty}
+      />
+
+      <ConfirmDialog
+        open={confirmingDiscard}
+        title="Discard your changes?"
+        description="This application has edits that have not been saved yet."
+        confirmLabel="Discard changes"
+        cancelLabel="Keep editing"
+        tone="danger"
+        onConfirm={discardAndClose}
+        onCancel={() => setConfirmingDiscard(false)}
       />
     </Drawer>
   )

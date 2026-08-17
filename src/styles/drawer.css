@@ -134,6 +134,48 @@
   font-size: var(--text-xs);
 }
 
+.confirm-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+}
+
+.confirm__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(16 24 40 / 55%);
+}
+
+.confirm {
+  position: relative;
+  width: min(26rem, 100%);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-lg);
+}
+
+.confirm__title {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-2);
+}
+
+.confirm__description {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
 .unsaved-note {
   display: flex;
   align-items: center;
