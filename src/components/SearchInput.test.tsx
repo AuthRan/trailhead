@@ -91,6 +91,51 @@ describe('SearchInput', () => {
     )
   })
 
+  it('focuses the field when "/" is pressed from elsewhere on the page', async () => {
+    const { user } = await renderSearch()
+
+    await user.click(screen.getByRole('button', { name: 'Reset filters' }))
+    await user.keyboard('/')
+
+    expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveFocus()
+  })
+
+  it('leaves "/" alone while the reader is typing in a field', async () => {
+    const { user } = await renderSearch()
+    const search = screen.getByRole('searchbox', { name: 'Search' })
+
+    await user.type(search, 'react/native')
+
+    // The character must reach the field rather than being swallowed as a
+    // shortcut.
+    expect(search).toHaveValue('react/native')
+  })
+
+  it('ignores "/" pressed with a modifier so browser shortcuts still work', async () => {
+    const { user } = await renderSearch()
+
+    await user.click(screen.getByRole('button', { name: 'Reset filters' }))
+    await user.keyboard('{Control>}/{/Control}')
+
+    expect(screen.getByRole('searchbox', { name: 'Search' })).not.toHaveFocus()
+  })
+
+  it('describes the shortcut without polluting the field label', async () => {
+    await renderSearch()
+
+    const search = screen.getByRole('searchbox', { name: 'Search' })
+    expect(search).toHaveAccessibleDescription('Press / to jump here')
+  })
+
+  it('stops listening for the shortcut once unmounted', async () => {
+    const { user, unmount } = await renderSearch()
+
+    unmount()
+    await user.keyboard('/')
+
+    expect(screen.queryByRole('searchbox', { name: 'Search' })).not.toBeInTheDocument()
+  })
+
   it('offers a labelled clear button only once there is text', async () => {
     const { user } = await renderSearch()
 

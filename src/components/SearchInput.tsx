@@ -11,6 +11,7 @@ export function SearchInput() {
 
   const [text, setText] = useState(filters.query)
   const debouncedText = useDebouncedValue(text, 250)
+  const inputRef = useRef<HTMLInputElement>(null)
   /** The last query this field and the shared filters agreed on. It tells the
    * two effects below which side moved, so a settled keystroke never overwrites
    * an external reset and vice versa. */
@@ -37,6 +38,32 @@ export function SearchInput() {
     setText(filters.query)
   }, [filtersToken, filters.query])
 
+  // "/" jumps to search from anywhere on the page, but only when the reader is
+  // not already typing somewhere — otherwise it would swallow the character.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return
+
+      const target = event.target as HTMLElement | null
+      if (
+        target?.isContentEditable ||
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+      ) {
+        return
+      }
+
+      event.preventDefault()
+      inputRef.current?.focus()
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [])
+
   return (
     <div className="field search-field">
       <label className="field__label" htmlFor={inputId}>
@@ -45,11 +72,13 @@ export function SearchInput() {
 
       <div className="search-field__control">
         <input
+          ref={inputRef}
           id={inputId}
           className="input"
           type="search"
           value={text}
           placeholder="Company, role, tag, note…"
+          aria-describedby={`${inputId}-hint`}
           onChange={(event) => setText(event.target.value)}
         />
 
@@ -64,6 +93,10 @@ export function SearchInput() {
           </button>
         ) : null}
       </div>
+
+      <p className="field__hint" id={`${inputId}-hint`}>
+        Press <kbd>/</kbd> to jump here
+      </p>
     </div>
   )
 }
