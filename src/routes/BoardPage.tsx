@@ -96,31 +96,36 @@ export function BoardPage() {
       ) : status === 'loading' && items.length === 0 ? (
         <p role="status" className="page-header__subtitle">Loading applications…</p>
       ) : (
-        <section className="board" aria-label="Application pipeline" aria-busy={movingId !== null}>
-          {STAGES.map((stage) => {
-            const applications = items.filter((item) => item.stage === stage)
-            return (
-              <section key={stage} className="board__column" aria-labelledby={`stage-${stage}`}>
-                <header className="board__column-header">
-                  <h2 id={`stage-${stage}`}><StageBadge stage={stage} /></h2>
-                  <span className="board__count">{applications.length}</span>
-                </header>
-                <div className="board__cards">
-                  {applications.map((application) => (
-                    <BoardCard
-                      key={application.id}
-                      application={application}
-                      onOpen={setOpenId}
-                      onMove={moveApplication}
-                      moving={movingId !== null}
-                    />
-                  ))}
-                  {applications.length === 0 ? <p className="board__empty">No applications</p> : null}
-                </div>
-              </section>
-            )
-          })}
-        </section>
+        <>
+          <p className="visually-hidden" role="status">
+            {movingId ? 'Updating application stage' : ''}
+          </p>
+          <section className="board" aria-label="Application pipeline" aria-busy={movingId !== null}>
+            {STAGES.map((stage) => {
+              const applications = items.filter((item) => item.stage === stage)
+              return (
+                <section key={stage} className="board__column" aria-labelledby={`stage-${stage}`}>
+                  <header className="board__column-header">
+                    <h2 id={`stage-${stage}`}><StageBadge stage={stage} /></h2>
+                    <span className="board__count">{applications.length}</span>
+                  </header>
+                  <div className="board__cards">
+                    {applications.map((application) => (
+                      <BoardCard
+                        key={application.id}
+                        application={application}
+                        onOpen={setOpenId}
+                        onMove={moveApplication}
+                        moving={movingId !== null}
+                      />
+                    ))}
+                    {applications.length === 0 ? <p className="board__empty">No applications</p> : null}
+                  </div>
+                </section>
+              )
+            })}
+          </section>
+        </>
       )}
 
       <DetailDrawer openId={openId} onClose={() => setOpenId(null)} />
