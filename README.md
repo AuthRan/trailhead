@@ -30,6 +30,14 @@ npm install
 npm run dev
 ```
 
+## Using the workspace
+
+- Use **Add application** from the List view to start a new record.
+- The Board provides Previous and Next controls for moving a card through the
+  pipeline without opening its detail drawer.
+- Statistics reflect the current filtered result, making it easy to inspect a
+  focused part of the job search.
+
 ## Scripts
 
 | Script              | Purpose                                  |
