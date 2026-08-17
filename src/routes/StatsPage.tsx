@@ -3,14 +3,15 @@ import { StageBadge } from '../components/StageBadge'
 import { formatRelative } from '../lib/date'
 import { breakdownBySource, buildFunnel, findStalled, summarize } from '../lib/stats'
 import { STAGE_SHORT_LABELS } from '../lib/types'
-import { useApplications } from '../state/ApplicationsContext'
+import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
 
 function percent(value: number): string {
   return new Intl.NumberFormat('en-GB', { style: 'percent', maximumFractionDigits: 0 }).format(value)
 }
 
 export function StatsPage() {
-  const { items, status } = useApplications()
+  const { items, status, error } = useApplications()
+  const { refresh } = useApplicationsActions()
   const { summary, funnel, sources, stalled } = useMemo(
     () => ({
       summary: summarize(items),
@@ -30,6 +31,12 @@ export function StatsPage() {
         </div>
       </div>
 
+      {status === 'error' ? (
+        <div className="error-banner" role="alert">
+          <span>{error ?? 'Something went wrong loading statistics.'}</span>
+          <button type="button" className="button" onClick={refresh}>Try again</button>
+        </div>
+      ) : null}
       {status === 'loading' && items.length === 0 ? <p role="status">Loading statistics…</p> : null}
 
       <div className="stats-summary" aria-label="Pipeline summary">
