@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ApplicationTable } from '../components/ApplicationTable'
 import { BulkActionsBar } from '../components/BulkActionsBar'
+import { DetailDrawer } from '../components/DetailDrawer'
 import { FilterBar } from '../components/FilterBar'
 import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
 
@@ -17,7 +18,7 @@ function LoadingRows() {
 export function ListPage() {
   const { items, status, error, totalCount, filters } = useApplications()
   const { refresh, resetFilters } = useApplicationsActions()
-  const [, setOpenId] = useState<string | null>(null)
+  const [openId, setOpenId] = useState<string | 'new' | null>(null)
 
   const isFiltered =
     filters.query !== '' ||
@@ -79,6 +80,8 @@ export function ListPage() {
           )}
         </section>
       )}
+
+      <DetailDrawer openId={openId} onClose={() => setOpenId(null)} />
     </>
   )
 }
