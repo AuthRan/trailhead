@@ -38,6 +38,11 @@ export function ListPage() {
             {totalCount} tracked in this workspace
           </p>
         </div>
+        <div className="page-header__actions">
+          <button type="button" className="button button--primary" onClick={() => setOpenId('new')}>
+            Add application
+          </button>
+        </div>
       </div>
 
       <FilterBar />
