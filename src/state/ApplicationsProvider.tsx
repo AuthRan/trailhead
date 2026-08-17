@@ -18,6 +18,7 @@ import type {
   Stage,
 } from '../lib/types'
 import { EMPTY_FILTERS } from '../lib/types'
+import { loadSort, saveSort } from '../lib/storage'
 import {
   applicationsReducer,
   initialApplicationsState,
@@ -40,7 +41,9 @@ function toggleMember<T>(list: T[], value: T): T[] {
 export function ApplicationsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(applicationsReducer, initialApplicationsState)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
-  const [sort, setSort] = useState<SortState>(DEFAULT_SORT)
+  // Read once on mount: the remembered column should be in place for the very
+  // first request rather than causing a second one.
+  const [sort, setSort] = useState<SortState>(() => loadSort() ?? DEFAULT_SORT)
   const [filtersToken, setFiltersToken] = useState(0)
   const [reloadToken, setReloadToken] = useState(0)
   const [facets, setFacets] = useState<{ tags: TagCount[]; total: number }>({
@@ -77,6 +80,10 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       controller.abort()
     }
   }, [filters, sort, reloadToken])
+
+  useEffect(() => {
+    saveSort(sort)
+  }, [sort])
 
   // Facets describe the whole workspace rather than the filtered view, so they
   // are loaded separately and only refreshed when the data itself changes.

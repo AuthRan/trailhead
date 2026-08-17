@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   clearApplications,
   loadApplications,
+  loadSort,
   saveApplications,
+  saveSort,
+  SORT_STORAGE_KEY,
   STORAGE_KEY,
 } from './storage'
 import { createSeedApplications } from './seed'
@@ -47,5 +50,48 @@ describe('storage', () => {
     clearApplications()
 
     expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull()
+  })
+})
+
+describe('sort preference', () => {
+  it('round-trips a sort', () => {
+    saveSort({ key: 'company', direction: 'asc' })
+
+    expect(loadSort()).toEqual({ key: 'company', direction: 'asc' })
+  })
+
+  it('returns null when nothing has been stored', () => {
+    expect(loadSort()).toBeNull()
+  })
+
+  it('ignores a stored value that is not JSON', () => {
+    window.localStorage.setItem(SORT_STORAGE_KEY, 'not json')
+
+    expect(loadSort()).toBeNull()
+  })
+
+  it('ignores a column that is not sortable', () => {
+    window.localStorage.setItem(
+      SORT_STORAGE_KEY,
+      JSON.stringify({ key: 'salary', direction: 'asc' }),
+    )
+
+    expect(loadSort()).toBeNull()
+  })
+
+  it('ignores an unknown direction', () => {
+    window.localStorage.setItem(
+      SORT_STORAGE_KEY,
+      JSON.stringify({ key: 'company', direction: 'sideways' }),
+    )
+
+    expect(loadSort()).toBeNull()
+  })
+
+  it('keeps the sort preference separate from the applications', () => {
+    saveSort({ key: 'stage', direction: 'desc' })
+    clearApplications()
+
+    expect(loadSort()).toEqual({ key: 'stage', direction: 'desc' })
   })
 })

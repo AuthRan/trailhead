@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { ApplicationsProvider } from './ApplicationsProvider'
 import { useApplications, useApplicationsActions } from './ApplicationsContext'
 import { resetApiCache, setLatencyRange } from '../data/applicationsApi'
+import { SORT_STORAGE_KEY } from '../lib/storage'
 
 function wrapper({ children }: { children: ReactNode }) {
   return <ApplicationsProvider>{children}</ApplicationsProvider>
@@ -139,5 +140,43 @@ describe('ApplicationsProvider', () => {
     const updated = result.current.store.items.find((item) => item.id === target.id)!
     expect(updated.stage).toBe('applied')
     expect(updated.events.at(-1)).toMatchObject({ kind: 'stage', to: 'applied' })
+  })
+})
+
+describe('remembered sort', () => {
+  it('defaults to most recently updated', async () => {
+    const { result } = renderStore()
+    await waitFor(() => expect(result.current.store.status).toBe('ready'))
+
+    expect(result.current.store.sort).toEqual({ key: 'updatedAt', direction: 'desc' })
+  })
+
+  it('remembers a sort for the next session', async () => {
+    const { result, unmount } = renderStore()
+    await waitFor(() => expect(result.current.store.status).toBe('ready'))
+
+    act(() => {
+      result.current.actions.setSort({ key: 'company', direction: 'asc' })
+    })
+    await waitFor(() =>
+      expect(result.current.store.sort).toEqual({ key: 'company', direction: 'asc' }),
+    )
+    unmount()
+
+    // A fresh provider stands in for a reload.
+    const next = renderStore()
+    await waitFor(() => expect(next.result.current.store.status).toBe('ready'))
+
+    expect(next.result.current.store.sort).toEqual({ key: 'company', direction: 'asc' })
+    expect(next.result.current.store.items[0].company).toBe('Brightsound')
+  })
+
+  it('falls back to the default when the stored sort is unusable', async () => {
+    window.localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify({ key: 'salary' }))
+
+    const { result } = renderStore()
+    await waitFor(() => expect(result.current.store.status).toBe('ready'))
+
+    expect(result.current.store.sort).toEqual({ key: 'updatedAt', direction: 'desc' })
   })
 })

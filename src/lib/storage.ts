@@ -1,8 +1,18 @@
-import type { Application } from './types'
+import type { Application, SortDirection, SortKey, SortState } from './types'
 import { STAGES } from './types'
 
 export const STORAGE_KEY = 'trailhead:applications'
+export const SORT_STORAGE_KEY = 'trailhead:sort'
 const STORAGE_VERSION = 1
+
+const SORT_KEYS: readonly SortKey[] = [
+  'updatedAt',
+  'company',
+  'role',
+  'stage',
+  'appliedOn',
+]
+const SORT_DIRECTIONS: readonly SortDirection[] = ['asc', 'desc']
 
 interface PersistedShape {
   version: number
@@ -70,5 +80,38 @@ export function clearApplications(): void {
     window.localStorage.removeItem(STORAGE_KEY)
   } catch {
     // Nothing to do; the key is already unreachable.
+  }
+}
+
+/** Reads the remembered sort. Returns `null` when nothing is stored or the
+ * stored value no longer names a real column, so the caller falls back to its
+ * own default rather than sorting by something that no longer exists. */
+export function loadSort(): SortState | null {
+  let raw: string | null = null
+
+  try {
+    raw = window.localStorage.getItem(SORT_STORAGE_KEY)
+  } catch {
+    return null
+  }
+
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<SortState>
+    if (!SORT_KEYS.includes(parsed.key as SortKey)) return null
+    if (!SORT_DIRECTIONS.includes(parsed.direction as SortDirection)) return null
+
+    return { key: parsed.key as SortKey, direction: parsed.direction as SortDirection }
+  } catch {
+    return null
+  }
+}
+
+export function saveSort(sort: SortState): void {
+  try {
+    window.localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort))
+  } catch {
+    // Sorting still works for this session; it just will not be remembered.
   }
 }
