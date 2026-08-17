@@ -9,7 +9,9 @@ interface PersistedShape {
   applications: Application[]
 }
 
-function isApplication(value: unknown): value is Application {
+/** Structural check for a stored record. Exported so an imported backup is held
+ * to the same shape as anything already persisted. */
+export function isApplication(value: unknown): value is Application {
   if (typeof value !== 'object' || value === null) return false
 
   const candidate = value as Partial<Application>
