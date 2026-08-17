@@ -18,9 +18,14 @@ function stubDownload() {
   const createObjectURL = vi.fn(() => 'blob:trailhead')
   vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL: vi.fn() })
 
-  const link = document.createElement('a')
+  const realCreateElement = document.createElement.bind(document)
+  const link = realCreateElement('a')
   vi.spyOn(link, 'click').mockImplementation(() => {})
-  vi.spyOn(document, 'createElement').mockReturnValue(link)
+  // Only the download anchor is intercepted — React keeps building real nodes,
+  // otherwise a re-render after the download corrupts the tree.
+  vi.spyOn(document, 'createElement').mockImplementation((tag: string) =>
+    tag === 'a' ? link : realCreateElement(tag),
+  )
 
   return { createObjectURL, link }
 }
@@ -58,6 +63,22 @@ describe('ListPage export', () => {
         screen.getByRole('button', { name: 'Export these as CSV' }),
       ).toBeInTheDocument(),
     )
+  })
+
+  it('backs up the whole workspace, not just the filtered rows', async () => {
+    const { user } = await renderListPage()
+
+    await user.type(screen.getByRole('searchbox', { name: 'Search' }), 'northwind')
+    await waitFor(() =>
+      expect(screen.getByText('1 of 12 shown')).toBeInTheDocument(),
+    )
+
+    const { createObjectURL, link } = stubDownload()
+    await user.click(screen.getByRole('button', { name: 'Back up' }))
+
+    await waitFor(() => expect(createObjectURL).toHaveBeenCalledTimes(1))
+    expect(link.download).toMatch(/^trailhead-backup-\d{4}-\d{2}-\d{2}\.json$/)
+    await screen.findByText('Backed up 12 applications')
   })
 
   it('disables the export when a filter leaves nothing to export', async () => {

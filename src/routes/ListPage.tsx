@@ -3,8 +3,12 @@ import { ApplicationTable } from '../components/ApplicationTable'
 import { BulkActionsBar } from '../components/BulkActionsBar'
 import { DetailDrawer } from '../components/DetailDrawer'
 import { FilterBar } from '../components/FilterBar'
+import { listApplications } from '../data/applicationsApi'
+import { downloadBackup } from '../lib/backup'
 import { downloadCsv } from '../lib/csv'
+import { EMPTY_FILTERS } from '../lib/types'
 import { useApplications, useApplicationsActions } from '../state/ApplicationsContext'
+import { useToasts } from '../state/ToastContext'
 
 function LoadingRows() {
   return (
@@ -17,9 +21,26 @@ function LoadingRows() {
 }
 
 export function ListPage() {
-  const { items, status, error, totalCount, filters } = useApplications()
+  const { items, status, error, totalCount, filters, sort } = useApplications()
   const { refresh, resetFilters } = useApplicationsActions()
+  const { showToast } = useToasts()
   const [openId, setOpenId] = useState<string | 'new' | null>(null)
+  const [backingUp, setBackingUp] = useState(false)
+
+  /** A backup is the whole workspace, so it deliberately ignores the filters
+   * narrowing the table. */
+  async function handleBackup() {
+    setBackingUp(true)
+    try {
+      const all = await listApplications({ filters: EMPTY_FILTERS, sort })
+      downloadBackup(all)
+      showToast(`Backed up ${all.length} applications`, { tone: 'success' })
+    } catch {
+      showToast('Could not build a backup. Try again.', { tone: 'danger' })
+    } finally {
+      setBackingUp(false)
+    }
+  }
 
   const isFiltered =
     filters.query !== '' ||
@@ -47,6 +68,14 @@ export function ListPage() {
             disabled={items.length === 0}
           >
             {isFiltered ? 'Export these as CSV' : 'Export CSV'}
+          </button>
+          <button
+            type="button"
+            className="button"
+            onClick={handleBackup}
+            disabled={backingUp || totalCount === 0}
+          >
+            {backingUp ? 'Backing up…' : 'Back up'}
           </button>
           <button type="button" className="button button--primary" onClick={() => setOpenId('new')}>
             Add application
