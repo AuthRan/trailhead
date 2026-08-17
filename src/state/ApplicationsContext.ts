@@ -6,6 +6,7 @@ import type {
   SortKey,
   SortState,
 } from '../lib/types'
+import type { TagCount } from '../lib/filter'
 import type { LoadStatus } from './applicationsReducer'
 
 export interface ApplicationsSnapshot {
@@ -15,6 +16,11 @@ export interface ApplicationsSnapshot {
   selectedIds: string[]
   filters: Filters
   sort: SortState
+  /** Tags across the whole workspace, so the filter chips stay stable while a
+   * filter is narrowing the visible rows. */
+  tagFacets: TagCount[]
+  /** Total applications before filtering, for "showing x of y" copy. */
+  totalCount: number
 }
 
 export interface ApplicationsActions {

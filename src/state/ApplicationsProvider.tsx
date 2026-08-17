@@ -8,7 +8,15 @@ import {
   restoreApplications as restoreApplicationsRequest,
   updateApplication as updateApplicationRequest,
 } from '../data/applicationsApi'
-import type { Application, ApplicationDraft, Filters, SortKey, SortState, Stage } from '../lib/types'
+import { collectTags, type TagCount } from '../lib/filter'
+import type {
+  Application,
+  ApplicationDraft,
+  Filters,
+  SortKey,
+  SortState,
+  Stage,
+} from '../lib/types'
 import { EMPTY_FILTERS } from '../lib/types'
 import {
   applicationsReducer,
@@ -34,6 +42,13 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT)
   const [reloadToken, setReloadToken] = useState(0)
+  const [facets, setFacets] = useState<{ tags: TagCount[]; total: number }>({
+    tags: [],
+    total: 0,
+  })
+  /** Bumped whenever a mutation lands, which is the only time facets can go
+   * stale — filtering the view does not change the workspace. */
+  const [dataVersion, setDataVersion] = useState(0)
   const requestIdRef = useRef(0)
 
   useEffect(() => {
@@ -61,6 +76,24 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       controller.abort()
     }
   }, [filters, sort, reloadToken])
+
+  // Facets describe the whole workspace rather than the filtered view, so they
+  // are loaded separately and only refreshed when the data itself changes.
+  useEffect(() => {
+    const controller = new AbortController()
+
+    listApplications({ filters: EMPTY_FILTERS, sort: DEFAULT_SORT }, controller.signal)
+      .then((all) => {
+        setFacets({ tags: collectTags(all), total: all.length })
+      })
+      .catch((error: unknown) => {
+        if (!isAbortError(error)) setFacets({ tags: [], total: 0 })
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [reloadToken, dataVersion])
 
   const patchFilters = useCallback((patch: Partial<Filters>) => {
     setFilters((current) => ({ ...current, ...patch }))
@@ -90,37 +123,54 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
     setReloadToken((token) => token + 1)
   }, [])
 
-  const createApplication = useCallback(async (draft: ApplicationDraft) => {
-    const application = await createApplicationRequest(draft)
-    dispatch({ type: 'application/created', application })
-    return application
+  const markDataChanged = useCallback(() => {
+    setDataVersion((version) => version + 1)
   }, [])
+
+  const createApplication = useCallback(
+    async (draft: ApplicationDraft) => {
+      const application = await createApplicationRequest(draft)
+      dispatch({ type: 'application/created', application })
+      markDataChanged()
+      return application
+    },
+    [markDataChanged],
+  )
 
   const updateApplication = useCallback(
     async (id: string, patch: Partial<ApplicationDraft>) => {
       const application = await updateApplicationRequest(id, patch)
       dispatch({ type: 'application/updated', application })
+      markDataChanged()
       return application
     },
-    [],
+    [markDataChanged],
   )
 
   const itemsRef = useRef(state.items)
   itemsRef.current = state.items
 
-  const removeApplications = useCallback(async (ids: string[]) => {
-    const removing = new Set(ids)
-    const removed = itemsRef.current.filter((item) => removing.has(item.id))
+  const removeApplications = useCallback(
+    async (ids: string[]) => {
+      const removing = new Set(ids)
+      const removed = itemsRef.current.filter((item) => removing.has(item.id))
 
-    await deleteApplicationsRequest(ids)
-    dispatch({ type: 'applications/removed', ids })
-    return removed
-  }, [])
+      await deleteApplicationsRequest(ids)
+      dispatch({ type: 'applications/removed', ids })
+      markDataChanged()
+      return removed
+    },
+    [markDataChanged],
+  )
 
-  const restoreApplications = useCallback(async (applications: Application[]) => {
-    await restoreApplicationsRequest(applications)
-    dispatch({ type: 'applications/restored', applications })
-  }, [])
+  const restoreApplications = useCallback(
+    async (applications: Application[]) => {
+      await restoreApplicationsRequest(applications)
+      dispatch({ type: 'applications/restored', applications })
+      markDataChanged()
+    },
+    [markDataChanged],
+  )
 
   const toggleSelection = useCallback((id: string) => {
     dispatch({ type: 'selection/toggled', id })
@@ -142,8 +192,18 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
       selectedIds: state.selectedIds,
       filters,
       sort,
+      tagFacets: facets.tags,
+      totalCount: facets.total,
     }),
-    [state.status, state.items, state.error, state.selectedIds, filters, sort],
+    [
+      state.status,
+      state.items,
+      state.error,
+      state.selectedIds,
+      filters,
+      sort,
+      facets,
+    ],
   )
 
   const actions = useMemo<ApplicationsActions>(
